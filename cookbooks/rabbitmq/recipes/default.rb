@@ -168,7 +168,7 @@ if node['rabbitmq']['cluster'] && (node['rabbitmq']['erlang_cookie'] != existing
   #Try to populate the cluster address from thr role
   if node['rabbitmq']['cluster_role'].length > 0
 	log "Attempting to retrieve RabbitMQ cluster hosts from chef role #{node['rabbitmq']['cluster_role']}"
-	  rabbit_nodes = partial_search(:node, 'role:#{node['rabbitmq']['cluster_role']}',
+	  rabbit_nodes = partial_search(:node, "role:#{node['rabbitmq']['cluster_role']}",
 	  :keys => {
 		'hostname' => [ 'hostname' ],
 		'fqdn'     => [ 'fqdn' ],
