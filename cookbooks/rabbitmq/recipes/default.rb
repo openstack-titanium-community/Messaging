@@ -166,21 +166,25 @@ end
 if node['rabbitmq']['cluster'] && (node['rabbitmq']['erlang_cookie'] != existing_erlang_key)
 
   #Try to populate the cluster address from thr role
-  rabbit_nodes = partial_search(:node, 'role:base-install',
-  :keys => {
-    'hostname' => [ 'hostname' ],
-    'fqdn'     => [ 'fqdn' ],
-    'ipaddress' => [ 'ipaddress' ]
-    }
-  )
-  if rabbit_nodes.length > 0
-     cluster_nodes = Array.new
-     rabbit_nodes.each do |clnode|
-        cluster_nodes << "rabbit@"+clnode['hostname']
-     end
-     node.default['rabbitmq']['cluster_disk_nodes'] = cluster_nodes
+  if node['rabbitmq']['cluster_role'].length > 0
+	log "Attempting to retrieve RabbitMQ cluster hosts from chef role #{node['rabbitmq']['cluster_role']}"
+	  rabbit_nodes = partial_search(:node, 'role:#{node['rabbitmq']['cluster_role']}',
+	  :keys => {
+		'hostname' => [ 'hostname' ],
+		'fqdn'     => [ 'fqdn' ],
+		'ipaddress' => [ 'ipaddress' ]
+		}
+	  )
+	  if rabbit_nodes.length > 0
+		 cluster_nodes = Array.new
+		 rabbit_nodes.each do |clnode|
+			cluster_nodes << "rabbit@"+clnode['hostname']
+		 end
+		 node.default['rabbitmq']['cluster_disk_nodes'] = cluster_nodes
+	  end
   end
   #End of cluster cluster address config
+
   log "stopping service[#{node['rabbitmq']['service_name']}] to change erlang_cookie" do
     level :info
     notifies :stop, "service[#{node['rabbitmq']['service_name']}]", :immediately
