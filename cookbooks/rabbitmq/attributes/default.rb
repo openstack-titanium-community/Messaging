@@ -30,7 +30,7 @@ default['rabbitmq']['local_erl_networking'] = false
 default['rabbitmq']['erl_networking_bind_address'] = nil
 
 #clustering
-default['rabbitmq']['cluster_role'] = "base-install" 
+default['rabbitmq']['cluster_role'] = "rabbitmq-config-proposal" 
 default['rabbitmq']['cluster'] = true
 default['rabbitmq']['cluster_disk_nodes'] = ['rabbit@controller-node-01', 'rabbit@controller-node-02', 'rabbit@controller-node-03']
 default['rabbitmq']['erlang_cookie'] = 'AnyAlphaNumericStringWillDoCOE1'
