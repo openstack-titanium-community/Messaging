@@ -18,7 +18,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+include_recipe 'partial_search' 
 include_recipe 'erlang'
 
 ## Install the package
@@ -113,10 +113,6 @@ when 'suse'
   # vendor change.
   package 'rabbitmq-server-plugins'
   package 'rabbitmq-server'
-
-  service node['rabbitmq']['service_name'] do
-    action [:enable, :start]
-  end
 when 'smartos'
   package 'rabbitmq'
 
@@ -168,6 +164,23 @@ else
 end
 
 if node['rabbitmq']['cluster'] && (node['rabbitmq']['erlang_cookie'] != existing_erlang_key)
+
+  #Try to populate the cluster address from thr role
+  rabbit_nodes = partial_search(:node, 'role:base-install',
+  :keys => {
+    'hostname' => [ 'hostname' ],
+    'fqdn'     => [ 'fqdn' ],
+    'ipaddress' => [ 'ipaddress' ]
+    }
+  )
+  if rabbit_nodes.length > 0
+     cluster_nodes = Array.new
+     rabbit_nodes.each do |clnode|
+        cluster_nodes << "rabbit@"+clnode['hostname']
+     end
+     node.default['rabbitmq']['cluster_disk_nodes'] = cluster_nodes
+  end
+  #End of cluster cluster address config
   log "stopping service[#{node['rabbitmq']['service_name']}] to change erlang_cookie" do
     level :info
     notifies :stop, "service[#{node['rabbitmq']['service_name']}]", :immediately
@@ -184,7 +197,8 @@ if node['rabbitmq']['cluster'] && (node['rabbitmq']['erlang_cookie'] != existing
 
   # Need to reset for clustering #
   execute "reset-node" do
-    command "rabbitmqctl stop_app && rabbitmqctl reset && rabbitmqctl start_app"
+    command "rabbitmqctl stop_app && rabbitmqctl reset && rabbitmqctl stop && setsid /etc/init.d/rabbitmq-server start"
+    #command "rabbitmqctl stop_app && rabbitmqctl reset && rabbitmqctl start_app"
     action :nothing
   end
 end
