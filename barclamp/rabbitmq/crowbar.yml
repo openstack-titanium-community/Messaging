@@ -19,7 +19,7 @@ barclamp:
   display: RabbitMQ Multinode
   version: 0
   member:
-    - openstack
+    - haopenstack
   os_support:
     - ubuntu-12.04
 
